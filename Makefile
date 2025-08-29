@@ -114,7 +114,7 @@ TOOLCHAIN_IMAGE := toolchain
 
 TAG ?= dev
 ARCH ?= $(shell go env GOARCH)
-ALL_ARCH ?= amd64 arm arm64 ppc64le s390x
+ALL_ARCH ?= amd64 arm64
 
 # main controller
 CORE_IMAGE_NAME ?= cluster-api-aws-controller
@@ -574,11 +574,11 @@ list-image: ## List images for RELEASE_TAG
 .PHONY: release
 release: clean-release check-release-tag check-release-branch $(RELEASE_DIR) $(GORELEASER)  ## Builds and push container images using the latest git tag for the commit.
 	git checkout "${RELEASE_TAG}"
-	$(MAKE) release-changelog
 	CORE_CONTROLLER_IMG=$(PROD_REGISTRY)/$(CORE_IMAGE_NAME) $(MAKE) release-manifests
 	$(MAKE) release-policies
-	$(GORELEASER) release --config $(GORELEASER_CONFIG) --release-notes $(RELEASE_DIR)/CHANGELOG.md --clean --parallelism $(GORELEASER_PARALLELISM)
-
+	$(GORELEASER) release --config $(GORELEASER_CONFIG) --release-notes CHANGELOG.md --clean --parallelism $(GORELEASER_PARALLELISM)
+	$(MAKE) docker-build-all docker-push-all
+	
 release-policies: $(RELEASE_POLICIES) ## Release policies
 
 $(RELEASE_DIR)/AWSIAMManagedPolicyControllers.json: $(RELEASE_DIR) $(CLUSTERAWSADM_SRCS)
